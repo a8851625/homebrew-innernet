@@ -62,12 +62,13 @@ class Innernet < Formula
       Pathname.glob(root/"doc/*.8").each { |page| man8.install page }
 
       # Shell completions, when the archive carried them.
+      # Homebrew exposes bash/zsh/fish/pwsh completion dirs; it has no elvish
+      # location, so elvish completions are skipped rather than failing.
       Pathname.glob(root/"doc/*.completions.*").each do |file|
         case file.to_s
         when /\.bash$/     then bash_completion.install file
         when /\.zsh$/      then zsh_completion.install file
-        when /\.fish$/     then fish_complete_path.install file
-        when /\.elvish$/   then elvish_complete_path.install file
+        when /\.fish$/     then fish_completion.install file
         when /powershell$/ then pwsh_completion.install file
         end
       end
