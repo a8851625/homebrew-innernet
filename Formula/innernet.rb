@@ -40,31 +40,35 @@ class Innernet < Formula
   depends_on "wireguard-go"
 
   def install
-    # The release archive contains a single top-level directory named after
-    # the target triple; Homebrew extracts into the build directory, so find
-    # the directory that actually holds the binaries.
-    root = Dir["*/"].first || "."
-    bin.install "#{root}innernet"
-    bin.install "#{root}innernet-server"
+    # The archive holds one directory named after the target triple. Locate it
+    # by finding the binary rather than taking the first directory: Dir["*/"]
+    # also matches sibling dirs, and inside the extracted tree "doc/" is a
+    # sibling too, which previously resolved the root to "doc" and failed with
+    # ENOENT on "doc/innernet".
+    binary = Pathname.glob("**/innernet")
+                     .reject(&:directory?)
+                     .min_by { |p| p.to_s.count("/") }
+    odie "innernet binary not found in the release archive" unless binary
 
-    # Man pages ship as .8 and .8.gz depending on platform; install whichever
-    # is present.
-    if File.directory?("#{root}doc")
-      # Archives ship both "x.8" and "x.8.gz" for the same page. Decompress the
-      # .gz variants, then install the plain ones only, so each page is
-      # installed exactly once. Homebrew's man.install expects uncompressed
-      # files.
-      Dir["#{root}doc/*.8.gz"].each { |gz| system "gunzip", "-f", gz }
-      Dir["#{root}doc/*.8"].each { |page| man8.install page }
+    root = binary.dirname
+    bin.install root/"innernet"
+    bin.install root/"innernet-server"
 
-      # Shell completions, if this platform's archive carried them.
-      completions = Dir["#{root}doc/*.completions.*"]
-      completions.each do |file|
-        case file
-        when /\.bash$/      then bash_completion.install file
-        when /\.fish$/      then fish_complete_path.install file
-        when /\.elvish$/    then elvish_complete_path.install file
-        when /\.ps1$/       then pwsh_completion.install file
+    if (root/"doc").directory?
+      # Archives ship both "x.8" and "x.8.gz" for the same page. Decompress
+      # the .gz variants first, then install only the plain files, so each page
+      # lands exactly once. man8.install expects uncompressed input.
+      Pathname.glob(root/"doc/*.8.gz").each { |gz| system "gunzip", "-f", gz.to_s }
+      Pathname.glob(root/"doc/*.8").each { |page| man8.install page }
+
+      # Shell completions, when the archive carried them.
+      Pathname.glob(root/"doc/*.completions.*").each do |file|
+        case file.to_s
+        when /\.bash$/     then bash_completion.install file
+        when /\.zsh$/      then zsh_completion.install file
+        when /\.fish$/     then fish_complete_path.install file
+        when /\.elvish$/   then elvish_complete_path.install file
+        when /powershell$/ then pwsh_completion.install file
         end
       end
     end
