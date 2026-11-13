@@ -21,12 +21,12 @@ class Innernet < Formula
   # ambiguous.
   on_arm do
     url "https://github.com/a8851625/innernet/releases/download/v2.5.0/innernet-2.5.0-aarch64-apple-darwin.tar.gz"
-    sha256 "1e05155a6ff8f579c9f58fe26c69fdd5c7875a7582eed640ad11c122b9eb4850"
+    sha256 "1aa141f307fa6f2142796a326e3f6f6cd654731b86bce4879dd98c686c68a119"
   end
 
   on_intel do
     url "https://github.com/a8851625/innernet/releases/download/v2.5.0/innernet-2.5.0-x86_64-apple-darwin.tar.gz"
-    sha256 "36052ae199be271d34abfd2e8effd40ca89a74ed20b05595839ad90b69b8becc"
+    sha256 "547c1f8bacfbeb3dc54aa5c385073f4fe376839cfc9d71d3e0b99a2ba203cfcd"
   end
 
   livecheck do
